@@ -50,6 +50,8 @@ public class FlutterFirebaseMessagingPlugin
   private MethodChannel channel;
   private Activity mainActivity;
 
+  public static final String CUSTOM_NOTIFICATION_FLAG = "CUSTOM_NOTIFICATION_FLAG";
+
   private final LiveData<RemoteMessage> liveDataRemoteMessage =
       FlutterFirebaseRemoteMessageLiveData.getInstance();
   private Observer<RemoteMessage> remoteMessageObserver;
@@ -547,6 +549,38 @@ public class FlutterFirebaseMessagingPlugin
     String messageId = intent.getExtras().getString("google.message_id");
     if (messageId == null) messageId = intent.getExtras().getString("message_id");
     if (messageId == null) {
+      String userInfo = (String)intent.getExtras().getString("userInfo");
+      String openCollectible = (String)intent.getExtras().getString("crossroads");
+
+      if(userInfo != null){
+        //            HashMap<String, Object> map = new Gson().fromJson(userInfo, HashMap.class);
+
+        HashMap<String, String> data = new HashMap<String, String>();
+        data.put("openAppData", userInfo);
+
+        RemoteMessage remoteMessage = new RemoteMessage.Builder(CUSTOM_NOTIFICATION_FLAG).setData(data).build();
+
+        initialMessage = remoteMessage;
+
+        channel.invokeMethod(
+                "Messaging#onMessageOpenedApp",
+                FlutterFirebaseMessagingUtils.remoteMessageToMap(remoteMessage));
+        mainActivity.setIntent(intent);
+        return true;
+      }else if(openCollectible!=null){
+        HashMap<String, String> data = new HashMap<String, String>();
+        data.put("openAppData", openCollectible);
+
+        RemoteMessage remoteMessage = new RemoteMessage.Builder(CUSTOM_NOTIFICATION_FLAG).setData(data).build();
+
+        initialMessage = remoteMessage;
+
+        channel.invokeMethod(
+                "Messaging#onMessageOpenedApp",
+                FlutterFirebaseMessagingUtils.remoteMessageToMap(remoteMessage));
+        mainActivity.setIntent(intent);
+        return true;
+      }
       return false;
     }
 
